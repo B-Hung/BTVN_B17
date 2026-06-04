@@ -1,0 +1,12 @@
+Bước 1: Kiểm tra container
+  Câu lệnh: docker ps
+  Kết quả: Kiểm tra xem container của mình có đang chạy không 
+Bước 2: Kiểm tra log
+  Câu lệnh: docker logs (tên container)
+  Kết quả: Kiểm tra xem trong log có dòng nào bị báo lỗi không
+Bước 3: Kiểm tra app respone bằng curl
+  Câu lệnh: curl -I http://localhost:82
+  Kết quả: Kiểm tra phản hồi của web
+Bước 4: Kiểm tra nginx router
+  Câu lệnh: nginx -t và systemctl status nginx
+  Kết quả: Kiểm tra xem cấu hình nginx có lỗi không và xem nginx có đang hoạt động không 

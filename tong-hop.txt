@@ -1,0 +1,77 @@
+Phần 1: Hệ thống hiện tại của em gồm gì 
+  1. Server
+    Sử dụng Server chạy hệ điều hành Ubuntu Linux.
+  2. Service
+    Có service app và db
+    Tên image: hung-java-app và mssql_data
+  3. Port
+    Sử dụng các port: 8089, 1433, 82
+  4. Nginx
+    Nginx đóng vai trò là web server và reverse proxy
+Phần 2: Luồng truy cập hệ thống
+  User đi vào đâu:
+   Khách hàng (User) nhập địa chỉ tên miền https://yourdomain.com từ trình duyệt máy tính cá nhân.
+
+  Request đi qua đâu:
+  1. Trình duyệt gửi Request -> Cloudflare DNS giải mã tên miền.
+  2. Request đi qua mạng Internet -> Đến cổng 80/443 của Cloudflare Proxy.
+  3. Cloudflare chuyển tiếp Request về địa chỉ IP Public của Server của em.
+
+  Nginx route vào đâu:
+  1. Nginx tại Server tiếp nhận Request tại cổng 80/443.
+  2. Nginx đọc cấu hình block server, thực hiện Reverse Proxy (sử dụng lệnh proxy_pass).
+  3. Nginx định tuyến (route) request vào cổng 8089 của Server .
+  4. Docker nhận traffic ở cổng 8089 và đẩy vào cổng 8080 bên trong Container "e-commercewebsite-main-app-1" để xử lý và trả kết quả về cho User
+ 
+  App gọi gì phía sau (Backend Connections):
+  1. Xử lý Logic nghiệp vụ: Sau khi nhận Request từ Nginx, Java App (Spring Boot/Tomcat) sẽ xử lý dữ liệu.
+  2. Gọi Cơ sở dữ liệu (Database): App kết nối tới SQL server.
+  3. Gọi Bộ nhớ đệm (Cache - nếu có): App gọi sang Redis để lấy dữ liệu nhanh, giảm tải cho Database.
+  4. Trả kết quả: Sau khi nhận đủ dữ liệu từ phía sau, App đóng gói thành mã HTML và truyền ngược lại theo luồng
+
+Phần 3: Quy trình deploy hiện tại
+  Em đang deploy kiểu gì:
+   Hiện tại hệ thống đang được triển khai theo hình thức Deploy bằng tay trực tiếp trên môi trường Production qua giao diện dòng lệnh SSH
+   Các bước thực hiện bao gồm: SSH vào server, pull code từ git về
+
+  Đã có script chưa:
+   Đã có script tự động hóa hoàn chỉnh 
+   Các câu lệnh khởi chạy, quản lý container được tự động hoá bàng script
+
+  Đã có bước verify chưa:
+   Đã có bước verify cơ bản bằng lệnh thông qua Terminal (như kiểm tra trạng thái container bằng `docker ps -a`, kiểm tra cú pháp nginx bằng `nginx -t`)
+   Tuy nhiên, bước verify này vẫn làm bằng tay, chưa được tự động hóa vào quy trình triển khai 
+
+
+PHẦN 4 – ÍT NHẤT 5 RỦI RO KỸ THUẬT
+1. Lộ IP gốc (Lộ Origin): 
+    Nếu cấu hình DNS trên Cloudflare hoặc cấu hình Header của Nginx không chặt chẽ, hacker có thể quét ra IP thật của Server để tấn công trực tiếp, bỏ qua lớp bảo vệ Cloudflare.
+
+2. Public Database ra ngoài Internet:
+    Nếu container Database (MySQL/SQL server) vô tình bị map port thẳng ra ngoài, kẻ xấu có thể thực hiện tấn công để đánh cắp dữ liệu.
+
+3. Deploy tay dễ quên bước
+    Quá trình gõ lệnh thủ công rất dễ xảy ra sai sót cấu hình, quên bật cổng, quên cấu hình biến môi trường, hoặc gõ sai tên Container dẫn đến gián đoạn dịch vụ.
+
+4. Thiếu cơ chế tự động Rollback:
+    Khi phiên bản mới gặp lỗi nghiêm trọng sau khi deploy, hệ thống không thể tự quay về phiên bản ổn định trước đó ngay lập tức mà phải mất thời gian kỹ sư vào xóa container, chạy lại bản cũ thủ công.
+
+5. Thiếu hệ thống quản lý Log và Giám sát 
+    Hệ thống hiện tại chỉ xem được log cục bộ bằng lệnh `docker logs`. Khi server quá tải hoặc treo, không có hệ thống cảnh báo tự động gửi về cho đội ngũ vận hành.
+
+
+PHẦN 5 – 3 VIỆC EM SẼ ƯU TIÊN CẢI THIỆN
+
+1. Chuẩn hóa Script Deploy và tăng bước Verify sau deploy:
+    Viết Bash Script (`deploy.sh`) để tự động hóa việc pull image, restart container,. 
+    Tích hợp tự động chạy file ngay sau khi deploy để báo trạng thái.
+
+2. Ẩn port không cần thiết và bảo mật hệ thống:
+    Đóng toàn bộ các cổng không sử dụng bên ngoài
+    Chỉ cho phép cổng 80/443 (Nginx) mở ra ngoài. Cổng 8089 của Java App và cổng Database sẽ chỉ cho phép truy cập cục bộ
+
+3. Chuẩn hóa cấu hình Nginx config và tách subdomain rõ hơn:
+    Phân chia tường minh các file cấu hình ứng dụng thành từng file riêng trong thư mục
+    Thiết lập cấu hình SSL/TLS tự động trực tiếp trên Nginx thay vì phụ thuộc hoàn toàn vào Cloudflare.
+
+

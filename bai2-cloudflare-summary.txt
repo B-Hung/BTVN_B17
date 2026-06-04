@@ -1,0 +1,10 @@
+1. Cloudflare đứng ở đâu trong hệ thống?
+- Cloudflare nằm ở giữa User/Browser và Ubuntu Server.
+- Mọi yêu cầu truy cập từ người dùng thông qua domain/subdomain đều phải đi qua Cloudflare trước khi đến được máy chủ của doanh nghiệp.
+
+2. Cloudflare làm gì?
+- Phân giải tên miền (DNS): Trả về IP của Cloudflare thay vì IP thật của máy chủ.
+- Reverse Proxy: Đứng ra nhận thay và chuyển tiếp các yêu cầu hợp lệ từ người dùng đến Nginx trên Ubuntu Server.
+- Bảo mật và Chống tấn công: Ngăn chặn tấn công DDoS, quét lỗ hổng thông qua Tường lửa ứng dụng web (WAF).
+- Tối ưu hiệu năng (Caching & CDN): Lưu trữ các tài nguyên tĩnh (hình ảnh, CSS, JS) tại các máy chủ gần người dùng nhất để tăng tốc độ tải trang và giảm tải cho Ubuntu Server.
+

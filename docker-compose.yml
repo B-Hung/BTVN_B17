@@ -1,0 +1,20 @@
+services:
+  reverse-proxy:
+    image: nginx
+    container_name: hung-reverse-proxy
+    ports:
+      - "82:82"
+    volumes:
+      - ./nginx.config:/etc/nginx/nginx.conf
+    depends_on:
+      - web
+      - api
+
+  web:
+    image: nginx
+    container_name: hung-web
+
+  api:
+    image: nginx
+    container_name: hung-api
+

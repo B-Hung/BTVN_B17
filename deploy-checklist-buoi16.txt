@@ -1,0 +1,25 @@
+BƯỚC 1: KIỂM TRA SOURCE CODE MỚI (PRE-DEPLOYMENT)
+  Chạy lệnh git status xem trạng thái file
+  Chạy lệnh git log -n 1 xem commit cuối
+
+BƯỚC 2: BUILD IMAGE TIÊU CHUẨN
+  Thực hiện build image mới bằng lệnh: `docker build -t <tên_service>
+  Kiểm tra image vừa build thành công chưa bằng lệnh: docker images
+
+BƯỚC 3: CHẠY LẠI STACK DỊCH VỤ 
+  Khởi chạy lại container với mã nguồn mới ở chế độ chạy ngầm bằng câu lệnh: docker compose up -d --build
+
+BƯỚC 4: KIỂM TRA TRẠNG THÁI CONTAINER
+  Chạy lệnh docker compose ps hoặc docker ps để kiểm tra danh sách container.
+
+BƯỚC 5: KIỂM TRA NHẬT KÝ HỆ THỐNG (LOGS BẢO TRÌ)
+  Theo dõi luồng log thời gian thực của container vừa ứng dụng bằng lệnh: docker compose logs <tên_service>
+
+BƯỚC 6: KIỂM TRA PHẢN HỒI ỨNG DỤNG (RESPONSE CHECK)
+  Đứng tại Server, thực hiện gửi yêu cầu HTTP nội bộ kiểm tra endpoint của ứng dụng qua lệnh: curl -I http://localhost:<port_nội_bộ>
+
+BƯỚC 7: KIỂM TRA TẦNG ĐỊNH TUYẾN NGINX / REVERSE PROXY
+  Kiểm tra cú pháp cấu hình Nginx trước khi áp dụng:  nginx -t
+  Kiểm tra Nginx có hoạt động không:  systemctl status nginx
+  Kiểm tra truy cập thực tế từ trình duyệt bên ngoài bằng tên miền phụ (ví dụ: https://example.com)
+
